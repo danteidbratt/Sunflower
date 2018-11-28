@@ -1,32 +1,33 @@
 int centerX;
 int centerY;
 boolean displayText = true;
-boolean looping = false;
 
-int size = 1000;
+int size = 700;
+int numberOfSeeds = 500;
 int seedSize = 10;
-int numberOfSeeds = 1000;
+int textSize = 30;
 
 // Phi = 0.61803398875
 // e = 2.71828182846
-float ratio = 0;
-
-float ratioChange = 0.00001;
-float ratioChangeIncrement = 0.00001;
+// sqrt(2) = 1.41421356237
+float ratio = 0.61803398875;
+ 
+float ratioChange = 0;
+float ratioChangeIncrement = 0.000001;
+int speed = 0;
+int fallbackSpeed = 0;
 
 float distance = size / numberOfSeeds;
 
 
 void setup() {
   fullScreen();
-  frameRate(30);
+  frameRate(60);
   noCursor();
-  noStroke();
+  strokeWeight(seedSize);
+  stroke(255, 200, 0);
+  fill(200);
   textSize(30);
-  if (!looping) {
-    noLoop();
-  }
-  fill(255, 200, 0);
   centerX = width / 2;
   centerY = height / 2;
 }
@@ -49,18 +50,34 @@ void placeSeeds() {
 }
 
 void placeSeed(float angle, float radius) {
-  ellipse(
+  point(
     centerX + cos(radians(angle)) * radius, 
-    centerY + sin(radians(angle)) * radius, 
-    seedSize, seedSize);
+    centerY + sin(radians(angle)) * radius);
+}
+
+void updateRatioChange() {
+   ratioChange = speed * ratioChangeIncrement; 
 }
 
 void writeText() {
   if (displayText) {
+    noStroke();
+    fill(20);
+    rect(20, 20, 160, 85);
+    stroke(255, 200, 0);
     fill(200);
-    text(String.format("%.5f", ratio), 30, 50);
-    fill(255, 200, 0);
+    text(
+    String.format("%.4f\n", ratio) + 
+    (speed > 0 ? "+" : "") + speed,
+    30, 50);
   }
+}
+
+void togglePlay() {
+  int temp = speed;
+  speed = fallbackSpeed;
+  fallbackSpeed = temp;
+  updateRatioChange();
 }
 
 void keyPressed() {
@@ -68,16 +85,19 @@ void keyPressed() {
     displayText = !displayText;
   } 
   if (key == ' ') {
-    if (looping) {
-      noLoop();
-    } else {
-      loop();
-    }
-    looping = !looping;
+    togglePlay();
   } else if (keyCode == UP) {
-    ratioChange += ratioChangeIncrement;
+    speed++;
+    fallbackSpeed = 0;
+    updateRatioChange();
   } else if (keyCode == DOWN) {
-    ratioChange -= ratioChangeIncrement;
+    speed--;
+    fallbackSpeed = 0;
+    updateRatioChange();
+  } else if (key == '+') {
+    strokeWeight(seedSize++);
+  } else if (key == '-') {
+    strokeWeight(seedSize--);
   } else {
     return;
   }
